@@ -63,5 +63,9 @@ func setupServer() *gin.Engine {
 
 func main() {
 	router := setupServer()
-	router.Run(":3030")
+	port := os.Getenv("KEVA_IPFS_PORT")
+	if len(port) == 0 {
+		log.Fatalln("Invalid port.")
+	}
+	router.Run(":" + port)
 }
