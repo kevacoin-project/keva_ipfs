@@ -12,46 +12,7 @@ import (
 	"os"
 	"os/exec"
 	"regexp"
-
-	"github.com/gin-gonic/gin"
-	shell "github.com/ipfs/go-ipfs-api"
 )
-
-func handleIPFSFileUpload(c *gin.Context, sh *shell.Shell) {
-
-	f, _, err := c.Request.FormFile("file")
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"message": err.Error(),
-			"error":   true,
-		})
-		return
-	}
-
-	defer f.Close()
-	cid, err := sh.Add(f)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": err.Error(),
-			"error":   true,
-		})
-		return
-	}
-	c.JSON(200, gin.H{
-		"CID": cid,
-	})
-}
-
-func setupIPFS() {
-	// IPFS
-	/*
-		sh := shell.NewShell("localhost:5001")
-		router.POST("/upload_ipfs", func(c *gin.Context) {
-			handleIPFSFileUpload(c, sh)
-		})
-	*/
-	// curl "https://ipfs.infura.io:5001/api/v0/add" -X POST -H "Content-Type: multipart/form-data" -F file=@"the_return.mp4"
-}
 
 func addFileToIPFS(f io.Reader) (string, error) {
 	tmpFile, err := ioutil.TempFile("", "_ipfs_tmp_")

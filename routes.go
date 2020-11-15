@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"os"
 	"os/exec"
@@ -175,9 +176,9 @@ func publishMediaIPFS(server *electrum.Server, c *gin.Context, paymentAddr strin
 				})
 				return
 			}
-			fmt.Println(string(dst))
 			cid := extractCID(string(dst))
-			cidResult, err := exec.Command("ipfs", "add", "/tmp/"+cid).Output()
+			cidFilename := "/tmp/" + cid
+			cidResult, err := exec.Command("ipfs", "add", cidFilename).Output()
 			if err != nil {
 				c.JSON(http.StatusInternalServerError, gin.H{
 					"message": "Failed to get CID",
@@ -193,6 +194,17 @@ func publishMediaIPFS(server *electrum.Server, c *gin.Context, paymentAddr strin
 					"error":   true,
 				})
 				return
+			}
+
+			// Also add it to Infura to make it available faster.
+			file, err := os.Open(cidFilename)
+			if err == nil {
+				reader := bufio.NewReader(file)
+				_, err = addFileToInfura(reader)
+				if err != nil {
+					log.Printf("Failed to add file to Infura: %v\n", err)
+				}
+				file.Close()
 			}
 		}
 	}
