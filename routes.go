@@ -11,6 +11,7 @@ import (
 	"os/exec"
 	"regexp"
 	"strings"
+	"time"
 
 	"github.com/checksum0/go-electrum/electrum"
 	"github.com/gin-gonic/gin"
@@ -109,16 +110,28 @@ func uploadMedia(c *gin.Context) {
 }
 
 func extractCID(keyStr string) string {
-	reg := regexp.MustCompile(`\{\{([[:alnum:]]+)\}\}`)
+	reg := regexp.MustCompile(`\{\{([[:ascii:]]+)\}\}`)
 	cidStr := string(reg.FindSubmatch([]byte(keyStr))[1])
-	return cidStr
+	cidAndMime := strings.Split(cidStr, "|")
+	return cidAndMime[0]
 }
 
 func publishMediaIPFS(server *electrum.Server, c *gin.Context, paymentAddr string, minPayment float64) {
 	var pinMedia PinMedia
 	c.BindJSON(&pinMedia)
+
 	tx, err := server.GetTransaction(pinMedia.Tx)
 	if err != nil {
+		var count = 0
+		// Try mutiple times - the transaction may not be in the mempool yet.
+		for (tx == nil) && (count < 6) {
+			time.Sleep(1 * time.Second)
+			tx, err = server.GetTransaction(pinMedia.Tx)
+			count++
+		}
+	}
+
+	if tx == nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "Invalid Transaction",
 			"error":   true,
