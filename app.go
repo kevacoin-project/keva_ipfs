@@ -33,7 +33,7 @@ func setupServer() *gin.Engine {
 	go func() {
 		for {
 			if err = electrumServer.Ping(); err != nil {
-				log.Fatal(err)
+				log.Println(err)
 			}
 			time.Sleep(60 * time.Second)
 		}
