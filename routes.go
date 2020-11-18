@@ -166,9 +166,9 @@ func publishMediaIPFS(server *electrum.Server, c *gin.Context, paymentAddr strin
 	for _, v := range tx.Vout {
 		if strings.HasPrefix(v.ScriptPubkey.Asm, "OP_KEVA_PUT") {
 			items := strings.Split(v.ScriptPubkey.Asm, " ")
-			key := items[2]
-			dst := make([]byte, hex.DecodedLen(len(key)))
-			_, err := hex.Decode(dst, []byte(key))
+			value := items[3]
+			dst := make([]byte, hex.DecodedLen(len(value)))
+			_, err := hex.Decode(dst, []byte(value))
 			if err != nil {
 				c.JSON(http.StatusBadRequest, gin.H{
 					"message": "No payment",
