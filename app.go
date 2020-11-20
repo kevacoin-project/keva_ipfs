@@ -101,14 +101,17 @@ func main() {
 		log.Println("**Warning: TLS/SSL not enabled. Set KEVA_TLS_ENABLED to 1 to enable TLS/SSL.")
 	}
 
+	portStr := strconv.Itoa(port)
 	if tlsEnabled != 0 {
 		serverCert := os.Getenv("KEVA_TLS_CERT")
 		serverKey := os.Getenv("KEVA_TLS_KEY")
 		if len(serverCert) == 0 || len(serverKey) == 0 {
 			log.Fatalln("Environment variables KEVA_TLS_CERT and KEVA_TLS_KEY required.")
 		}
-		router.RunTLS(":"+strconv.Itoa(port), serverCert, serverKey)
+		log.Printf("Listen to port: " + portStr)
+		router.RunTLS(":"+portStr, serverCert, serverKey)
 	} else {
-		router.Run(":" + strconv.Itoa(port))
+		log.Printf("Listen to port: " + portStr)
+		router.Run(":" + portStr)
 	}
 }
