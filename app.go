@@ -67,5 +67,23 @@ func main() {
 	if len(port) == 0 {
 		log.Fatalln("Invalid port.")
 	}
-	router.Run(":" + port)
+
+	tlsEnabled := 0
+	tlsEnabled, _ = strconv.Atoi(os.Getenv("KEVA_TLS_ENABLED"))
+	if tlsEnabled != 0 {
+		log.Println("Using TLS/SSL")
+	} else {
+		log.Println("**Warning: TLS/SSL not enabled. Set KEVA_TLS_DOMAIN to your domain to enable TLS/SSL. e.g. export KEVA_TLS_DOMAIN=example.com")
+	}
+
+	if tlsEnabled != 0 {
+		serverCert := os.Getenv("KEVA_TLS_CERT")
+		serverKey := os.Getenv("KEVA_TLS_KEY")
+		if len(serverCert) == 0 || len(serverKey) == 0 {
+			log.Fatalln("Environment variables KEVA_TLS_CERT and KEVA_TLS_KEY required.")
+		}
+		router.RunTLS(":"+port, serverCert, serverKey)
+	} else {
+		router.Run(":" + port)
+	}
 }
