@@ -25,15 +25,20 @@ func setupServer(port string, isSSL bool) *gin.Engine {
 		log.Fatalln("Invalid minimal payment value.")
 	}
 
+	electrumHost := os.Getenv("KEVA_ELECTRUM_HOST")
+	if len(electrumHost) == 0 {
+		log.Fatalln("Environment variable KEVA_ELECTRUM_HOST required.")
+	}
+
 	electrumServer := electrum.NewServer()
 
 	if isSSL {
 		conf := &tls.Config{}
-		if err = electrumServer.ConnectSSL("127.0.0.1:"+port, conf); err != nil {
+		if err = electrumServer.ConnectSSL(electrumHost+":"+port, conf); err != nil {
 			log.Fatal(err)
 		}
 	} else {
-		if err = electrumServer.ConnectTCP("127.0.0.1:" + port); err != nil {
+		if err = electrumServer.ConnectTCP(electrumHost + ":" + port); err != nil {
 			log.Fatal(err)
 		}
 	}
